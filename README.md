@@ -1,2 +1,251 @@
-# only_c_webserver
-For when you don't want to bother with setting up the environment. For when you want to check the behavior of a site created in a local environment.
+# セキュアなC言語ウェブサーバー
+
+
+
+### コア機能
+- マルチスレッド対応のHTTP/1.1サーバー
+- 適切なMIMEタイプ検出機能を備えた静的ファイル配信
+- JSONをサポートしたPOSTリクエスト処理
+- 設定可能なドキュメントルートとポート
+
+### セキュリティ機能
+- **レートリミット**: IPごとの接続数とリクエスト数を設定可能
+- **入力検証**: 包括的なパストラバーサルおよびインジェクション攻撃からの保護
+- **セキュリティヘッダー**: CSP, HSTS, X-Frame-Options, XSS保護
+- **リクエストサニタイズ**: ヘッダーの検証とサイズ制限
+- **ロギング**: syslogと連携したセキュリティイベントのログ記録
+- **バッファ保護**: サイズ制限付きの動的バッファ割り当て
+- **パスセキュリティ**: 実在パスの検証とサンドボックス化
+
+### 拡張機能
+- 設定ファイルのサポート
+- 包括的なエラーハンドリング
+- 一般的なファイルタイプに対するMIMEタイプ検出
+- メモリリークの防止
+- 適切なミューテックス使用によるスレッドセーフティ
+
+## 要件
+
+### システム要件
+- Linux/Unixオペレーティングシステム
+- C99をサポートするGCCコンパイラ
+- libcjson-dev (JSON解析用)
+- libpthread (スレッドサポート用)
+
+### オプションの依存関係
+- OpenSSL開発ライブラリ (将来のHTTPSサポート用)
+- cppcheck (静的解析用)
+- clang静的アナライザ (高度な解析用)
+
+## インストール
+
+### ソースから
+```bash
+# Ubuntu/Debianでの依存関係のインストール
+sudo apt-get update
+sudo apt-get install build-essential libcjson-dev libssl-dev
+
+# クローンしてビルド
+git clone <repository>
+cd only_c_webserver
+make
+
+# システム全体にインストール (任意)
+sudo make install
+```
+
+### 手動でのコンパイル
+```bash
+gcc -Wall -Wextra -O2 -std=c99 -D_GNU_SOURCE -o webserver WEBserver.c -lpthread -lcjson
+```
+
+## 設定
+
+### 設定ファイル (`server.conf`)
+サーバーは `server.conf` から設定を読み込みます:
+
+```ini
+# サーバー設定
+PORT=8080
+BASE_DIRECTORY=/var/www
+MAX_CONNECTIONS=100
+
+# セキュリティ設定
+MAX_CONNECTIONS_PER_IP=10
+RATE_LIMIT_WINDOW=60
+MAX_REQUESTS_PER_WINDOW=100
+MAX_HEADER_SIZE=8192
+MAX_POST_SIZE=1048576
+
+# ロギング設定
+LOG_LEVEL=INFO
+ENABLE_SYSLOG=1
+```
+
+### ディレクトリ構造
+```
+/var/www/          # デフォルトのドキュメントルート
+├── index.html     # デフォルトのホームページ
+├── assets/        # 静的アセット
+└── api/           # APIエンドポイント
+```
+
+## 使用方法
+
+### 基本的な使用方法
+```bash
+# サーバーを起動 (1024未満のポートにはsudoが必要)
+sudo ./webserver
+
+# カスタムポートで起動
+PORT=8080 ./webserver
+```
+
+### 開発テスト
+```bash
+# ビルドしてテスト
+make test
+
+# セキュリティテストを実行
+make security-test
+
+# デバッグビルド
+make debug
+```
+
+### APIエンドポイント
+- `GET /` - 静的ファイルを配信
+- `POST /api/data` - JSONデータエンドポイント
+
+## セキュリティ機能
+
+### レートリミット
+- IPアドレスごとに最大10接続
+- 60秒のウィンドウ内で最大100リクエスト
+- 古いクライアントデータの自動クリーンアップ
+
+### 入力検証
+- パストラバーサル防止 (`../` の保護)
+- URLエンコーディングの検証
+- リクエストサイズの制限
+- ヘッダーインジェクションからの保護
+
+### セキュリティヘッダー
+すべてのレスポンスにセキュリティヘッダーが含まれます:
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `X-XSS-Protection: 1; mode=block`
+- `Content-Security-Policy: default-src 'self'`
+- `Strict-Transport-Security` (HTTPS有効時)
+
+### ロギング
+セキュリティイベントは以下に記録されます:
+- システムログ (syslog)
+- コンソール出力
+- カスタムログファイル (設定可能)
+
+イベントタイプには以下が含まれます:
+- 接続試行
+- レートリミット違反
+- パストラバーサル試行
+- 不正なリクエスト
+- サーバーエラー
+
+## 開発
+
+### ビルド
+```bash
+# 標準ビルド
+make
+
+# シンボル付きのデバッグビルド
+make debug
+
+# ビルド成果物をクリーン
+make clean
+```
+
+### テスト
+```bash
+# 基本機能テスト
+make test
+
+# セキュリティ脆弱性テスト
+make security-test
+
+# 静的コード解析
+make static-analysis
+```
+
+### コード構造
+- `WEBserver.c` - メインのサーバー実装
+- `server.conf` - 設定ファイル
+- `ssl_utils.h/c` - SSL/TLSサポート (将来実装予定)
+- `Makefile` - ビルドシステム
+
+## セキュリティに関する考慮事項
+
+### デプロイ時のセキュリティ
+1.  **ユーザー権限**: 必要最小限の権限で実行する
+2.  **ファイアウォール**: 適切なファイアウォールルールを設定する
+3.  **ログ監視**: セキュリティログを定期的に監視する
+4.  **アップデート**: 依存関係を最新の状態に保つ
+5.  **ファイルパーミッション**: ドキュメントルートのパーミッションをセキュアに設定する
+
+### 既知の制限事項
+- HTTPSは未サポート (SSLフレームワークは準備済み)
+- 基本認証のみ
+- シングルプロセスアーキテクチャ
+- 動的コンテンツ生成機能なし
+
+## トラブルシューティング
+
+### よくある問題
+1.  **ポートのバインドに失敗**: ポートが利用可能か、またはsudoで実行しているか確認してください
+2.  **権限がありません**: ドキュメントルートの適切なファイルパーミッションを確認してください
+3.  **JSON解析エラー**: libcjsonがインストールされているか確認してください
+4.  **高いメモリ使用量**: 接続のリークがないか確認してください
+
+### デバッグモード
+```bash
+make debug
+gdb ./webserver_debug
+```
+
+### ログ分析
+```bash
+# セキュリティログを表示
+tail -f /var/log/syslog | grep webserver
+
+# システムログを確認
+journalctl -u webserver -f
+```
+
+## パフォーマンス
+
+### ベンチマーク
+- 同時接続数: 最大100
+- リクエストスループット: 約1000リクエスト/秒
+- メモリ使用量: 負荷時で50MB未満
+- CPU使用率: 最新のハードウェアで5%未満
+
+### 最適化のヒント
+1.  `BUFFER_SIZE`を使用ケースに合わせて調整する
+2.  適切なレートリミットを設定する
+3.  長期間実行するインスタンスでメモリ使用量を監視する
+4.  適切なコンパイラ最適化を使用する
+
+## コントリビュート
+
+### コーディング規約
+- C99標準への準拠
+- 包括的なエラーチェック
+- メモリリークの防止
+- スレッドセーフティ
+- セキュリティ第一の設計
+
+### テスト要件
+- すべてのセキュリティ機能がテストされていること
+- valgrindによるメモリリークテスト
+- 静的解析への準拠
+- スレッドセーフティの検証

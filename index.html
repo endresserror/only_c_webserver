@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure C Web Server</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 10px;
+        }
+        .feature {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #007acc;
+            border-radius: 4px;
+        }
+        .security {
+            background: #e8f5e8;
+            border-left-color: #28a745;
+        }
+        code {
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .status {
+            margin-top: 30px;
+            padding: 15px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Secure C Web Server - 動作中</h1>
+        
+        <div class="status">
+            <strong>ステータス:</strong> サーバーが正常に動作しています
+        </div>
+
+        <div class="feature security">
+            <h3>セキュリティ機能</h3>
+            <ul>
+                <li><strong>レート制限:</strong> DoS攻撃の防止</li>
+                <li><strong>パストラバーサル保護:</strong> ディレクトリトラバーサル攻撃の防止</li>
+                <li><strong>セキュリティヘッダー:</strong> XSS、クリックジャッキング防止</li>
+                <li><strong>入力検証:</strong> 不正なリクエストの検出と拒否</li>
+                <li><strong>ログ機能:</strong> セキュリティイベントの記録</li>
+            </ul>
+        </div>
+
+        <div class="feature">
+            <h3>実装されている機能</h3>
+            <ul>
+                <li>マルチスレッドHTTPサーバー</li>
+                <li>静的ファイル配信</li>
+                <li>POSTリクエスト処理</li>
+                <li>適切なMIMEタイプ設定</li>
+                <li>設定ファイルサポート</li>
+                <li>エラーハンドリングの改善</li>
+            </ul>
+        </div>
+
+        <div class="feature">
+            <h3>APIエンドポイント</h3>
+            <p><code>GET /</code> - 静的ファイル配信</p>
+            <p><code>POST /api/data</code> - JSONデータ受信</p>
+        </div>
+
+        <div class="feature">
+            <h3>使用方法</h3>
+            <p>このサーバーはローカル開発環境での使用を想定しています。</p>
+            <p>設定は <code>server.conf</code> ファイルで変更可能です。</p>
+        </div>
+    </div>
+
+    <script>
+        console.log('Secure C Web Server - ページが読み込まれました');
+        
+        // 簡単な動作確認
+        fetch('/api/data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ test: 'security test' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('API Test Result:', data);
+        })
+        .catch(error => {
+            console.log('API not available:', error);
+        });
+    </script>
+</body>
+</html>

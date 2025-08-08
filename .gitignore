@@ -1,0 +1,49 @@
+# Compiled binaries
+webserver
+webserver_debug
+webserver_analyze
+
+# Object files
+*.o
+*.obj
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Build directories
+build/
+dist/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Core dumps
+core
+core.*
+
+# Backup files
+*.bak
+*.orig
+
+# Package manager files
+*.deb
+*.rpm
+
+# Archive files
+*.tar.gz
+*.zip
+*.7z
